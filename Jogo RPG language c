@@ -1,0 +1,431 @@
+#include <stdio.h>  // Biblioteca padrão de entrada e saída
+#include <stdlib.h> // Biblioteca padrão de funções utilitárias, incluindo controle de memória, processos e conversões
+#include <string.h> // Biblioteca para manipulação de strings
+#include <time.h>   // Biblioteca para manipulação de tempo e geração de números aleatórios
+
+#define MAX_NAME_LENGTH 50 // Define o tamanho máximo do nome de um 
+#define MAX_HP 100 // Define o HP máximo que um personagem pode 
+#define MAX_PLAYERS 100 // Define o número máximo de jogadores para a tabela de pontuações
+
+// Definição dos tipos de arma
+typedef enum { ESPADA, MACHADO, BESTA } Arma; // Define um tipo enumerado para as armas disponíveis
+
+// Estrutura do personagem
+typedef struct {
+    char nome[MAX_NAME_LENGTH];  // Nome do personagem
+    int hp;                      // Pontos de vida
+    int ataque;                  // Valor de ataque
+    int defesa;                  // Valor de defesa
+    int nivel;                   // Nível do personagem
+    int experiencia;             // Experiência acumulada
+    int pontos;                  // Pontos de jogo
+    Arma arma;                   // Tipo de arma
+} Personagem;
+
+// Estrutura para a pontuação
+typedef struct {
+    char nome[MAX_NAME_LENGTH]; //Nome do jogador
+    int pontos;                 // Pontos do jogador
+} Pontuacao;
+
+// Função para limpar a tela
+void limparTela() {
+#ifdef _WIN32
+    system("cls");   // Comando para limpar a tela no Windows
+#else
+    system("clear"); // Comando para limpar a tela em sistemas Unix-like
+#endif
+}
+
+// Função para criar um personagem
+Personagem criarPersonagem() {
+    Personagem p;                                // Declara um novo personagem
+    printf("Digite o nome do seu personagem: ");
+    scanf("%s", p.nome);                        // Lê o nome do personagem
+    p.hp = MAX_HP;                              // Define o HP inicial
+    p.ataque = 10;                              // Define a defesa inicial
+    p.defesa = 10;                              // Define o ataque inicial
+    p.nivel = 1;                                // Define o nível inicial
+    p.experiencia = 0;                          // Define a experiência 
+    p.pontos = 0;
+    p.arma = ESPADA; // Definindo a arma inicial como ESPADA
+    return p;                                   // Retorna o personagem criado
+}
+
+// Função para o ataque com espada
+int ataqueComEspada(Personagem *atacante, Personagem *defensor) {
+    int dano = atacante->ataque + (rand() % 10 + 1) - defensor->defesa;
+    // Calcula o dano com um valor aleatório
+    if (dano < 0) {
+        dano = 0;  // Se o dano for negativo, define como 0
+    }
+    defensor->hp -= dano;  // Subtrai o dano do HP do defensor
+    printf("%s ataca com espada causando %d de dano!\n\n", atacante->nome, dano);
+    return dano;  // Retorna o dano causado
+}
+
+// Função para o ataque com machado
+int ataqueComMachado(Personagem *atacante, Personagem *defensor) {
+    int dano = atacante->ataque + (rand() % 15 + 1) - defensor->defesa;
+    if (dano < 0) {
+        dano = 0;
+    }
+    defensor->hp -= dano;
+    printf("%s ataca com machado causando %d de dano!\n\n", atacante->nome, dano);
+    return dano;
+}
+
+// Função para o ataque com besta
+int ataqueComBesta(Personagem *atacante, Personagem *defensor) {
+    int dano = atacante->ataque + (rand() % 20 + 1) - defensor->defesa;
+    if (dano < 0) {
+        dano = 0;
+    }
+    defensor->hp -= dano;
+    printf("%s ataca com besta causando %d de dano!\n\n", atacante->nome, dano);
+    return dano;
+}
+
+// Função para o ataque de magia de água
+int ataqueDeAgua(Personagem *atacante, Personagem *defensor) {
+    int dano = (rand() % 15 + 5) - defensor->defesa;
+    if (dano < 0) {
+        dano = 0;
+    }
+    defensor->hp -= dano;
+    printf("%s conjura um ataque de água causando %d de dano!\n\n", atacante->nome, dano);
+    return dano;
+}
+
+// Função para o ataque de magia de vento
+int ataqueDeVento(Personagem *atacante, Personagem *defensor) {
+    int dano = (rand() % 12 + 8) - defensor->defesa;
+    if (dano < 0) {
+        dano = 0;
+    }
+    defensor->hp -= dano;
+    printf("%s conjura um ataque de vento causando %d de dano!\n\n", atacante->nome, dano);
+    return dano;
+}
+
+// Função para o ataque de magia de fogo
+int ataqueDeFogo(Personagem *atacante, Personagem *defensor) {
+    int dano = (rand() % 20 + 10) - defensor->defesa;
+    if (dano < 0) {
+        dano = 0;
+    }
+    defensor->hp -= dano;
+    printf("%s conjura um ataque de fogo causando %d de dano!\n\n", atacante->nome, dano);
+    return dano;
+}
+
+// Função ataque surpresa
+int ataquesurpresa(Personagem *atacante, Personagem *defensor) {
+    int dano = (atacante->ataque * 15) - (defensor->defesa * 40);  // Calcula o dano do ataque surpresa
+    if (dano < 100) 
+        dano = 100;  // Define um dano mínimo de 100
+    defensor->hp -= dano;  // Subtrai o dano do HP do defensor
+    printf("%s realiza um ataque surpresa causando %d de dano!\n\n", atacante->nome, dano);
+    return dano;  // Retorna o dano causado
+}    
+
+// Função para defesa
+void defender(Personagem *defensor) {
+    defensor->defesa += 5;
+    printf("%s se defende aumentando sua defesa temporariamente!\n\n", defensor->nome);
+}
+
+// Função para mostrar status do personagem
+void mostrarStatus(Personagem *p) {
+    printf("\n%s\n", p->nome);
+    printf("HP: %d\n", p->hp);
+    printf("Ataque: %d\n", p->ataque);
+    printf("Defesa: %d\n", p->defesa);
+    printf("Nivel: %d\n", p->nivel);
+    printf("Experiência: %d\n", p->experiencia);
+    printf("Pontos: %d\n", p->pontos);
+}
+
+// Função para exibir a descrição do mapa
+void exibirDescricaoMapa(int mapa) {
+    switch (mapa) {
+        case 1:
+            printf("Você escolheu a Floresta Encantada: Em uma era de magia e mistério, você, um aventureiro destemido, se aventura na Floresta Encantada, um lugar onde a linha entre o real e o imaginário se desfaz. As árvores centenárias sussurram segredos ancestrais, enquanto criaturas mágicas dançam entre os raios de luz filtrados pelas folhas. Uma promessa de tesouros perdidos e poderes antigos atrai você para este reino selvagem e encantado. No entanto, cuidado, pois cada sombra esconde perigos desconhecidos e maravilhas inimagináveis.\n\n");
+            break;
+        case 2:
+            printf("Você escolheu a Caverna Sombria: Em um mundo devastado pelo caos e pela calamidade, você é um sobrevivente determinado em uma cidade que já foi um farol de civilização. Ruas outrora movimentadas agora são labirintos de destroços e desespero, onde os ecos dos gritos ecoam entre os prédios abandonados. Mas entre as sombras sombrias, segredos sombrios e esperanças frágeis surgem, prometendo revelar verdades obscuras e um destino incerto. Neste mundo de desolação e desespero, sua coragem e astúcia serão testadas como nunca antes.\n\n");
+            break;
+        case 3:
+            printf("Você escolheu o Castelo Abandonado: Em uma terra envolta em neblina eterna, onde o sol raramente se atreve a brilhar, ergue-se o imponente Castelo Assombrado. Outrora um símbolo de poder e majestade, agora é um lugar de sombras e mistérios. Dizem que o castelo é habitado por espíritos inquietos, criaturas das trevas e enigmas que desafiam a sanidade. A cada passo pelos corredores gelados, sussurros de almas perdidas ecoam, contando histórias de traição, amores esquecidos e magias antigas. Você, um bravo aventureiro, foi atraído por lendas de tesouros ocultos e segredos arcanos. Com coragem no coração e armas em punho, você deve enfrentar os terrores do Castelo Assombrado e desvendar seus segredos mais profundos. Mas cuidado, pois nem tudo é o que parece, e cada sombra pode esconder perigos inimagináveis. Sua jornada pela escuridão começa agora.\n\n");
+            break;
+        default:
+            printf("Mapa desconhecido.\n\n");
+            break;
+    }
+}
+
+// Função para exibir frase da fase
+void exibirFraseDaFase(int fase, int mapa) {
+    const char* frases[3][10] = {
+        {
+            "Fase 1: Você entra na Floresta Encantada, o começo de sua jornada.",
+            "Fase 2: Os animais da floresta estão inquietos.",
+            "Fase 3: Você sente que está sendo observado.",
+            "Fase 4: A névoa torna difícil enxergar adiante.",
+            "Fase 5: Sons estranhos ecoam entre as árvores.",
+            "Fase 6: Você encontra um rastro de pegadas misteriosas.",
+            "Fase 7: A vegetação se torna mais densa e ameaçadora.",
+            "Fase 8: Você ouve um rugido distante.",
+            "Fase 9: Um clima sombrio envolve o ambiente.",
+            "Fase 10: Você está próximo do coração da Floresta Encantada."
+        },
+        {
+            "Fase 1: Você entra na Caverna Sombria, o início de um desafio.",
+            "Fase 2: A escuridão é quase total aqui.",
+            "Fase 3: Você escuta goteiras constantes.",
+            "Fase 4: Os corredores são estreitos e claustrofóbicos.",
+            "Fase 5: Você encontra ossos espalhados pelo chão.",
+            "Fase 6: Um vento gelado sopra pela caverna.",
+            "Fase 7: As paredes parecem se mover.",
+            "Fase 8: Você sente uma presença maligna.",
+            "Fase 9: Um cheiro pútrido preenche o ar.",
+            "Fase 10: Você está perto do núcleo da Caverna Sombria."
+        },
+        {
+            "Fase 1: Você adentra o Castelo Abandonado, a aventura começa.",
+            "Fase 2: Os salões são vastos e silenciosos.",
+            "Fase 3: Você escuta sussurros nas sombras.",
+            "Fase 4: O ar é frio e pesado.",
+            "Fase 5: Você encontra antigos retratos nas paredes.",
+            "Fase 6: Um relógio bate em algum lugar distante.",
+            "Fase 7: A sensação de ser observado aumenta.",
+            "Fase 8: O chão range sob seus pés.",
+            "Fase 9: Uma névoa sobrenatural preenche o corredor.",
+            "Fase 10: Você está próximo ao centro do Castelo Abandonado."
+        }
+    };
+
+    if (fase > 0 && fase <= 10 && mapa >= 1 && mapa <= 3) {
+        printf("%s\n", frases[mapa - 1][fase - 1]);;  // Exibe a frase correspondente à fase e mapa selecionados
+    } else {
+        printf("Fase ou mapa desconhecido.\n\n");  // Caso a fase ou o mapa não sejam conhecidos, imprime uma mensagem de erro
+    }
+}
+
+// Função para o turno do jogador
+void turnoDoJogador(Personagem *jogador, Personagem *inimigo) {
+    int escolha;
+    printf("\nEscolha sua ação:\n");
+    printf("1. Atacar com arma\n");
+    printf("2. Conjurar magia\n");
+    printf("3. Defender\n");
+    printf("Escolha: ");
+    scanf("%d", &escolha);
+    limparTela();
+
+    switch (escolha) {
+        case 1: {
+            printf("Escolha sua arma:\n");
+            printf("1. Espada\n");
+            printf("2. Machado\n");
+            printf("3. Besta\n\n");
+            printf("Escolha: ");
+            int armaEscolha;
+            scanf("%d", &armaEscolha);
+            if (armaEscolha == 1) {
+                ataqueComEspada(jogador, inimigo);
+            } else if (armaEscolha == 2) {
+                ataqueComMachado(jogador, inimigo);
+            } else if (armaEscolha == 3) {
+                ataqueComBesta(jogador, inimigo);
+            }
+            break;
+        }
+        case 2: {
+            printf("Escolha sua magia:\n");
+            printf("1. Água\n");
+            printf("2. Vento\n");
+            printf("3. Fogo\n\n");
+            printf("Escolha: ");
+            int magiaEscolha;
+            scanf("%d", &magiaEscolha);
+            if (magiaEscolha == 1) {
+                ataqueDeAgua(jogador, inimigo);
+            } else if (magiaEscolha == 2) {
+                ataqueDeVento(jogador, inimigo);
+            } else if (magiaEscolha == 3) {
+                ataqueDeFogo(jogador, inimigo);
+            }
+            break;
+        }
+        case 3:
+            defender(jogador);
+            break;
+        case 4:
+            ataquesurpresa(jogador, inimigo);
+            break;
+        case 0:
+            printf("Você desistiu da batalha. Game Over.\n");
+            exit(0);
+        default:
+            printf("Ação inválida!\n");
+            break;
+    }
+}
+
+// Função para o turno do inimigo
+void turnoDoInimigo(Personagem *inimigo, Personagem *jogador) {
+    int escolha = rand() % 3 + 1; // Escolha aleatória de ação para o inimigo
+    switch (escolha) {
+        case 1:
+            ataqueComEspada(inimigo, jogador);
+            break;
+        case 2:
+            ataqueComMachado(inimigo, jogador);
+            break;
+        case 3:
+            ataqueComBesta(inimigo, jogador);
+            break;
+    }
+}
+
+// Função para salvar a pontuação em um arquivo
+void salvarPontuacao(Pontuacao p) {
+    // Abre o arquivo "pontuacoes.txt" no modo de acrescentar (append)
+    FILE *arquivo = fopen("pontuacoes.txt", "a");
+    if (arquivo == NULL) { // Verifica se houve erro ao abrir o arquivo
+        printf("Erro ao abrir arquivo de pontuações.\n");
+        return; // Sai da função se houver erro
+    }
+    // Escreve o nome e a pontuação no arquivo, em uma nova linha
+    fprintf(arquivo, "%s %d\n", p.nome, p.pontos);
+    // Fecha o arquivo
+    fclose(arquivo);
+}
+
+// Função para comparar pontuações para qsort
+int compararPontuacoes(const void *a, const void *b) {
+    // Converte os ponteiros genéricos para ponteiros de Pontuacao
+    Pontuacao *pa = (Pontuacao *)a;
+    Pontuacao *pb = (Pontuacao *)b;
+    // Compara as pontuações de forma decrescente
+    return pb->pontos - pa->pontos;
+}
+
+// Função para exibir a tabela de pontuações
+void exibirTabelaDePontuacoes() {
+// Abre o arquivo "pontuacoes.txt" no modo de leitura
+    FILE *arquivo = fopen("pontuacoes.txt", "r");
+    if (arquivo == NULL) {
+        printf("Nenhuma pontuação registrada.\n");
+        return; // Sai da função se houver erro
+    }
+
+// Declara um array de structs Pontuacao para armazenar as pontuações lidas do arquivo
+    Pontuacao pontuacoes[MAX_PLAYERS];
+    int count = 0; // Inicializa o contador de pontuações
+
+// Lê as pontuações do arquivo enquanto houver dados e não atingir o máximo de jogadores
+    while (fscanf(arquivo, "%s %d", pontuacoes[count].nome, &pontuacoes[count].pontos) == 2) {
+        count++; // Incrementa o contador de pontuações
+    }
+// Fecha o arquivo após a leitura
+    fclose(arquivo);
+
+// Ordena as pontuações em ordem decrescente usando qsort e a função compararPontuacoes
+    qsort(pontuacoes, count, sizeof(Pontuacao), compararPontuacoes);
+
+    printf("\n--- Tabela de Pontuações ---\n");
+    for (int i = 0; i < count; i++) { // Itera sobre as pontuações lidas
+        // Imprime a posição, o nome do jogador e a pontuação
+        printf("%d. %s: %d pontos\n", i + 1, pontuacoes[i].nome, pontuacoes[i].pontos);
+    }
+    printf("\n");
+}
+
+int main() {
+    // Inicializa o gerador de números aleatórios com o tempo atual
+    srand(time(NULL));
+
+    // Cria um personagem chamando a função criarPersonagem
+    Personagem jogador = criarPersonagem();
+
+    // Exibir mapa e fases
+    int mapaEscolhido;
+    printf("Escolha um mapa:\n");
+    printf("1. Floresta Encantada\n");
+    printf("2. Caverna Sombria\n");
+    printf("3. Castelo Abandonado\n");
+    printf("Digite o número do mapa escolhido: ");
+    scanf("%d", &mapaEscolhido);
+    limparTela();
+    exibirDescricaoMapa(mapaEscolhido);
+
+    // Loop de fases
+    for (int fase = 1; fase <= 10; fase++) {
+        exibirFraseDaFase(fase, mapaEscolhido);
+
+        // Criação do monstro da fase
+        Personagem monstro;
+        sprintf(monstro.nome, "Monstro %d", fase);
+        monstro.hp = MAX_HP / 2 + (fase * 5);
+        monstro.ataque = 5 + fase;
+        monstro.defesa = 5 + fase;
+        monstro.nivel = fase;
+        monstro.experiencia = 0;
+        monstro.pontos = 0;
+        monstro.arma = ESPADA;
+
+        // Loop de batalha
+        while (jogador.hp > 0 && monstro.hp > 0) {  // Loop da batalha enquanto ambos têm HP
+            printf("\n-- Batalha --\n");
+        // Função que representa o turno do jogador, onde o jogador ataca o monstro
+            turnoDoJogador(&jogador, &monstro);
+        // Se o monstro ainda tiver HP após o ataque do jogador, o monstro ataca o jogador
+            if (monstro.hp > 0) {
+                turnoDoInimigo(&monstro, &jogador);
+            }
+
+        // Exibe o status atual de HP do jogador e do monstro
+            printf("\n-- Status --\n");
+            mostrarStatus(&jogador);
+            mostrarStatus(&monstro);
+        }
+
+        // Verifica se o jogador foi derrotado
+        if (jogador.hp <= 0) {
+            printf("Você foi derrotado!\n");
+            break;
+        }
+
+        printf("Você derrotou o %s!\n", monstro.nome);
+        // Incrementa a experiência do jogador com base no nível do monstro derrotado
+        jogador.experiencia += monstro.nivel * 10;
+        jogador.pontos += monstro.nivel * 20; // Incrementar pontos ao derrotar o monstro
+
+        if (jogador.experiencia >= jogador.nivel * 50) {
+            jogador.nivel++;
+            jogador.ataque += 5;
+            jogador.defesa += 5;
+            jogador.hp = MAX_HP;
+            printf("Você subiu para o nível %d!\n", jogador.nivel);
+        }
+
+        limparTela();
+    }
+
+    if (jogador.hp > 0) {
+        printf("Parabéns! Você completou todas as fases!\n");
+    }
+
+    // Salvar a pontuação final
+    Pontuacao p;
+    strcpy(p.nome, jogador.nome);
+    p.pontos = jogador.pontos;
+    salvarPontuacao(p);
+
+    // Exibir a tabela de pontuações
+    exibirTabelaDePontuacoes();
+
+    return 0;
+}
